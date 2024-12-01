@@ -50,7 +50,7 @@ object JanTyrianApp extends TyrianIOApp[Msg, JanTyrianApp.Model]:
 
 
   def view(model: Model): Html[Msg] =
-    div(cls:="flex flex-col gap-2")(
+    div(cls:="flex flex-col gap-2 p-10")(
       div(cls:="flex gap-4")(
         a(href:="/")("Main"),
         a(href:="/counter")("Counter"),
@@ -60,7 +60,7 @@ object JanTyrianApp extends TyrianIOApp[Msg, JanTyrianApp.Model]:
       ),
       model.page match
         case Page.MainPage =>
-          div()()
+          div()(span()(model.toString))
         case Page.DndPage => PageDnd.view(model.dndModel).map(Msg.UpdatePageDnd.apply)
         case Page.ClockPage => PageClock.view(model.tick)
         case Page.CounterPage => PageCounter.view(model.counterModel).map(Msg.UpdatePageCounter.apply)

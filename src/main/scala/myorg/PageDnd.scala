@@ -9,29 +9,32 @@ import tyrian.*
 import tyrian.http.*
 import myorg.PageDnd.Msg.{DecoderError, GetDragon, NoOp}
 
+
 object PageDnd {
-  case class Model(monster: Option[Monster], inputValue: String)
+  case class Model(monster: Option[Monster], inputValue: String, error: Option[String])
 
   def init: Model =
-    Model(None,"")
+    Model(None,"",None)
 
-  def view(model: Model): Html[Msg] = div()(
-    div()(model.monster.fold(text("Nothing"))(x=>viewMonster(x))),
-    input(value:=model.inputValue,onInput(Msg.Input.apply)),
-    button(onClick(GetDragon))("Get Monster")
+  def view(model: Model): Html[Msg] = div(cls:="flex flex-col gap-2")(
+
+    div(cls:="flex gap-2")(ui.Input.interactive(model.inputValue,Msg.Input.apply),
+    ui.Button.interactive("Get Monster",GetDragon)),
+    div()(model.monster.fold(text(""))(x=>viewMonster(x))),
+    div()(model.error.fold(text(""))(text))
   )
 
   def viewMonster(monster:Monster): Html[Msg] =
     div(cls:="border p-2 border-grey-500 flex flex-col gap-2") (
       div()(s"Name: ${monster.name}"),
       div()(s"Index: ${monster.index}"),
-        div()(s"Type/Subtype: ${monster.type_}/ ${monster.subtype}"),
+        div()(s"Type/Subtype: ${monster.type_}/ ${monster.subtype.getOrElse("-")}"),
     )
   def update(model: Model): Msg => (Model, Cmd[IO, Msg]) =
     case NoOp => (model, Cmd.None)
     case GetDragon => (model, getDragonCommand(model.inputValue))
     case Msg.GotMonster(monster: Monster) => (model.copy(monster = Some(monster)), Cmd.None)
-    case DecoderError(_) => (model, Cmd.None)
+    case DecoderError(err) => (model.copy(error = Some(err)), Cmd.None)
     case Msg.Input(i) => (model.copy(inputValue = i),Cmd.None)
 
   enum Msg:

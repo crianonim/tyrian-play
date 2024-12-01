@@ -16,7 +16,7 @@ object PageGame {
   didHit: Boolean, level: Int, hs: Int)
 
   enum Msg:
-    case NoOp,RandomiseBar, Restart
+    case NoOp, Restart
     case KeyPressed(k: String)
     case GotRandomWidth(w: Int)
     case GotRandomPosition(p: Int)
@@ -57,7 +57,6 @@ object PageGame {
        else (model, Cmd.None)
     case Msg.GotRandomWidth(w) => (model.copy(width = w), randomisePosition(w))
     case Msg.GotRandomPosition(p) => (model.copy(start = p), Cmd.None)
-    case Msg.RandomiseBar => (model, randomiseWidth)
     case Msg.Restart => (model.copy(running = true, level = if (model.didHit) model.level + 1 else 0, hs = Math.max(model.level + 1, model.hs)), if (model.didHit && model.level + 1 > model.hs) Cmd.Batch(randomiseWidth, saveHS(model.level + 1)) else randomiseWidth)
     case Msg.GotHS(hs) => (model.copy(hs = hs), Cmd.None)
     case Msg.NoOp => (model,Cmd.None)
@@ -70,17 +69,14 @@ object PageGame {
     val position = if (direction==0)  (tickTimesSpeed % WIDTH) else (WIDTH - (tickTimesSpeed % WIDTH))
     div(cls:="flex flex-col gap-2 p-4")(
       div()(s"Level ${model.level}. Local High Score: ${model.hs}"),
-      div()(if (model.running) "Try to hit the black box" else if (model.didHit) "You hit it and gained a level, will be faster now" else "You missed, back to 0"),
+      div()(if (model.running) "Press any key to try to hit the black box" else if (model.didHit) "You hit it and gained a level, will be faster now" else "You missed, back to 0"),
       div()(
-        svg(viewBox := s"0, 0, $WIDTH, 20", width := s"${WIDTH}px")(
+        svg(viewBox := s"0, 0, $WIDTH, 20", width := s"100%")(
           rect(x:="0",y:="0",width:=WIDTH.toString,height:="40", stroke := "#eeeeee", fill :="#eeeeee"),
           rect(x:= model.start.toString , y:="0",  width:=model.width.toString, height:="20"
             , stroke := "#023963"),
           line(x1:=position.toString,x2:=position.toString, y1:="0", y2:="20", stroke:="#ff3333")
         )
-        ,
-        button(onClick(Msg.RandomiseBar))("Randomise"),
-
       )
     )
 
